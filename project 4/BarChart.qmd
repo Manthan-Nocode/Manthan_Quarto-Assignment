@@ -1,0 +1,54 @@
+---
+title: "BarChart"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+source("main.r")
+```
+
+You can add options to executable code like this
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(plotly)
+
+# Assuming 'combined_data' has been properly merged and prepared
+# Aggregate GDP per capita across years 2014 to 2017 and handle missing values
+selected_countries <- combined_data %>%
+  filter(year >= 2014, year <= 2017, !is.na(GDP_per_capita)) %>%
+  group_by(Country) %>%
+  summarise(Average_GDP_per_capita = mean(GDP_per_capita, na.rm = TRUE)) %>%
+  ungroup() %>%
+  arrange(desc(Average_GDP_per_capita)) %>%
+  head(10)  # Ensure we take the top 10 after aggregating and arranging
+
+# Convert 'Country' to a character to avoid factor level issues
+selected_countries$Country <- as.character(selected_countries$Country)
+
+# Create a ggplot object
+bar_chart <- ggplot(selected_countries, aes(x = Country, y = Average_GDP_per_capita, fill = Country)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Top 10 Countries by Average GDP per Capita (2014-2017)", x = "Country", y = "Average GDP per capita (US$)") +
+  theme_minimal()
+
+# Convert ggplot object to an interactive plotly object
+interactive_bar_chart <- ggplotly(bar_chart)
+
+# Print the interactive plot
+interactive_bar_chart
+
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).

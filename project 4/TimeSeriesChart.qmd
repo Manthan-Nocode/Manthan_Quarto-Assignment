@@ -1,0 +1,59 @@
+---
+title: "TimeSeriesChart"
+author: "Manthan Tiwari"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+source("main.r")
+```
+
+You can add options to executable code like this
+
+```{r}
+# Load required libraries
+library(readxl)
+library(dplyr)
+library(plotly)
+
+# Load and prepare your combined_data here, if not already loaded
+
+# Determine the top 10 countries by average GDP per capita
+top_countries <- combined_data %>%
+  group_by(Country) %>%
+  summarize(Average_GDP = mean(GDP_per_capita, na.rm = TRUE)) %>%
+  top_n(10, Average_GDP) %>%
+  pull(Country)
+
+# Filter data for these top countries
+top_country_data <- combined_data %>%
+  filter(Country %in% top_countries) %>%
+  arrange(Country, year)
+
+# Create interactive line graph
+p <- plot_ly(data = top_country_data, x = ~year, y = ~GDP_per_capita,
+             text = ~paste("GDP: ", round(GDP_per_capita, 2)),
+             hoverinfo = "text+x+y", mode = 'lines+markers', split = ~Country,
+             marker = list(size = 7, opacity = 0.6), line = list(width = 2),
+             type = 'scatter') %>%
+  layout(title = "GDP Per Capita Over Time for Top 10 Countries",
+         xaxis = list(title = "Year"),
+         yaxis = list(title = "GDP Per Capita (constant 2015 US$)"),
+         hovermode = "closest")
+
+# Print the interactive plot
+p
+
+
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).

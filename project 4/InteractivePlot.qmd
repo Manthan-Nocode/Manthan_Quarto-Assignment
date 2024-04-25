@@ -1,0 +1,41 @@
+---
+title: "InteractivePlot"
+author: "Manthan Tiwari"
+format: html
+editor: visual
+execute: 
+  echo: false
+  message: false
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+source("main.r")
+```
+
+You can add options to executable code like this
+
+```{r}
+install.packages("tidyverse")
+```
+
+```{r}
+install.packages("plotly")
+```
+
+```{r}
+library(plotly)
+plot_ly(data = combined_data, x = ~GDP_per_capita, y = ~Child_Deprivation, type = 'scatter', mode = 'markers',
+        marker = list(size = 10, color = 'rgba(255, 182, 193, .9)', line = list(color = 'rgba(152, 0, 0, .8)', width = 2)),
+        text = ~paste("Country:", Country)) %>%
+  layout(title = "Interactive Scatter Plot of GDP vs Child Deprivation")
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).

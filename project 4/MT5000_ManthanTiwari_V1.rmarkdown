@@ -1,0 +1,206 @@
+---
+title: "Mapping Economic Impact: A Global View of Child Deprivation and Prosperity"
+author: "Manthan Tiwari"
+format: html
+editor: visual
+execute: 
+  echo: false
+  warning: false
+  message: false
+output:
+  html_document:
+    self_contained: false  
+---
+
+
+# Abstract:
+
+This report explores the relationship between economic indicators and child deprivation across various countries. Utilizing data from two key sources—unicef_indicator_1.xlsx and unicef_metadata.xlsx—the analysis is presented through a series of visualizations that illustrate global patterns and trends. These insights aim to inform policymakers and stakeholders, providing a data-driven foundation for targeted interventions to improve child welfare globally.
+
+# Introduction:
+
+Child deprivation is a critical issue that affects future generations' educational outcomes, health, and overall well-being. Understanding the economic factors that correlate with child deprivation can help tailor effective policies. This report uses comprehensive datasets from UNICEF to examine the linkage between GDP per capita and child deprivation rates worldwide.
+
+# Data Description:
+
+The analysis is based on two primary data sources:
+
+unicef_indicator_1.xlsx: Contains data on child deprivation rates, detailing the percentage of children suffering from educational, nutritional, or welfare inadequacies in various countries. unicef_metadata.xlsx: Provides broader economic and demographic indicators such as GDP per capita, population totals, and life expectancy.
+
+## Visualization 1: World Map Chart
+
+#### Narrative:
+
+This world map vividly illustrates the prevalence of **child deprivation across different nations**, highlighting regions with the **highest and lowest percentages**. By visualizing **deprivation data geographically,** we can immediately identify **global patterns and hotspots** where interventions are most needed. This map sets the stage for a deeper exploration into what drives these patterns, particularly the role of economic factors.
+
+
+```{r}
+install.packages("ggplot2")
+install.packages("dplyr")
+install.packages("rnaturalearth")
+install.packages("rnaturalearthdata")
+install.packages("sf")
+install.packages("plotly")
+```
+
+```{r}
+source("main.r")
+```
+
+```{r}
+library(plotly)
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+# Prepare world data and merge with your dataset
+world <- ne_countries(scale = "medium", returnclass = "sf")
+world_map <- left_join(world, combined_data, by = c("iso_a2" = "alpha_2_code"))
+
+# Create ggplot object
+p <- ggplot(data = world_map) +
+  geom_sf(aes(fill = Child_Deprivation), color = NA) +
+  labs(title = "Global Child Deprivation Rates", fill = "Deprivation %") +
+  theme_minimal()
+
+# Convert to interactive plot
+ggplotly(p)
+
+
+```
+
+
+## Visualization 2: Bar Chart
+
+#### Title: Top 10 Countries by GDP per Capita in 2017
+
+#### Narrative:
+
+The bar chart titled "Top 10 Countries by Average GDP per Capita (2014-2017)" presents an aggregated view of the countries with the highest GDP per capita over a four-year span. Countries like Luxembourg, Switzerland, and Norway consistently appear at the top, showcasing their strong economic status. However, high GDP per capita does not always imply lower rates of child deprivation, prompting a deeper look into social policies and their effectiveness in translating economic wealth into societal well-being.
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(plotly)
+
+# Assuming 'combined_data' has been properly merged and prepared
+# Aggregate GDP per capita across years 2014 to 2017 and handle missing values
+selected_countries <- combined_data %>%
+  filter(year >= 2014, year <= 2017, !is.na(GDP_per_capita)) %>%
+  group_by(Country) %>%
+  summarise(Average_GDP_per_capita = mean(GDP_per_capita, na.rm = TRUE)) %>%
+  ungroup() %>%
+  arrange(desc(Average_GDP_per_capita)) %>%
+  head(10)  # Ensure we take the top 10 after aggregating and arranging
+
+# Convert 'Country' to a character to avoid factor level issues
+selected_countries$Country <- as.character(selected_countries$Country)
+
+# Create a ggplot object
+bar_chart <- ggplot(selected_countries, aes(x = Country, y = Average_GDP_per_capita, fill = Country)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Top 10 Countries by Average GDP per Capita (2014-2017)", x = "Country", y = "Average GDP per capita (US$)") +
+  theme_minimal()
+
+# Convert ggplot object to an interactive plotly object
+interactive_bar_chart <- ggplotly(bar_chart)
+
+# Print the interactive plot
+interactive_bar_chart
+
+
+```
+
+
+## Visualization 3: Scatter-plot with Linear Regression Line
+
+#### Title: Child Deprivation vs. GDP Per Capita (2017)
+
+#### Narrative:
+
+Delving into the relationship between **economic output** and **child welfare**, this scatterplot with a linear regression line examines how **GDP per capita** correlates with child deprivation percentages across countries. The trend line offers a statistical backbone to our observations, highlighting whether higher economic output generally corresponds to lower levels of child deprivation, or if the reality is more complex.
+
+
+```{r}
+plot_data <- combined_data %>%
+  filter(year == 2017)
+
+ggplot(plot_data, aes(x = GDP_per_capita, y = Child_Deprivation)) +
+  geom_point(aes(color = Country)) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Child Deprivation vs. GDP per Capita (2017)", x = "GDP per Capita", y = "Deprivation %")
+
+```
+
+
+## Visualization 4: Time-Series Chart
+
+#### Title: GDP Per Capita Over Time in Top 10 Countries
+
+#### Narrative:
+
+The top 10 countries by average GDP per capita, including Belize, Costa Rica, Dominican Republic, Gabon, Maldives, Mexico, Paraguay, South Africa, Suriname, and Turkmenistan, present a diverse tableau of economic models and stages of development. Belize and Suriname are tightly linked to the volatile global commodity markets due to their reliance on agriculture and mining, while Costa Rica and the Dominican Republic capitalize on robust tourism driven by their natural and geographical advantages, with Costa Rica also enhancing its appeal through committed environmental sustainability. Gabon remains vulnerable to global oil price shifts, underlining the need for diversification. In contrast, the Maldives leverages its luxury tourism sector as a significant GDP contributor, although it faces risks from environmental challenges. Mexico and South Africa, as larger economies, navigate complexities of industrial expansion and political dynamics, striving to translate economic growth into societal benefits. Paraguay's GDP benefits from its strong agricultural exports, despite facing infrastructural challenges, and Turkmenistan's economy, bolstered by natural gas, must also address political and economic reforms for sustained growth. These examples underscore the varied economic pathways and the inherent challenges and opportunities each country faces, highlighting the complex interplay between achieving high GDP and fostering sustainable and equitable growth.
+
+
+```{r}
+library(readxl)
+library(dplyr)
+library(plotly)
+
+# Load and prepare your combined_data here, if not already loaded
+
+# Determine the top 10 countries by average GDP per capita
+top_countries <- combined_data %>%
+  group_by(Country) %>%
+  summarize(Average_GDP = mean(GDP_per_capita, na.rm = TRUE)) %>%
+  top_n(10, Average_GDP) %>%
+  pull(Country)
+
+# Filter data for these top countries
+top_country_data <- combined_data %>%
+  filter(Country %in% top_countries) %>%
+  arrange(Country, year)
+
+# Create interactive line graph
+p <- plot_ly(data = top_country_data, x = ~year, y = ~GDP_per_capita,
+             text = ~paste("GDP: ", round(GDP_per_capita, 2)),
+             hoverinfo = "text+x+y", mode = 'lines+markers', split = ~Country,
+             marker = list(size = 7, opacity = 0.6), line = list(width = 2),
+             type = 'scatter') %>%
+  layout(title = "GDP Per Capita Over Time for Top 10 Countries",
+         xaxis = list(title = "Year"),
+         yaxis = list(title = "GDP Per Capita (constant 2015 US$)"),
+         hovermode = "closest")
+
+# Print the interactive plot
+p
+
+```
+
+
+## Visualization 5: Interactive Plots
+
+#### Title: Explore the Data: Interactive Analysis of GDP and Child Deprivation
+
+#### Narrative:
+
+This interactive plot invites users to engage directly with the data, exploring relationships between GDP, child deprivation, and other variables like population size. By interacting with the plot, users can select specific countries or years, dive into the details, and form their own hypotheses about the data. It's a tool for discovery and education, enabling a personal journey through the data where each user can draw unique insights.
+
+
+```{r}
+library(plotly)
+plot_ly(data = combined_data, x = ~GDP_per_capita, y = ~Child_Deprivation, type = 'scatter', mode = 'markers',
+        marker = list(size = 10, color = 'rgba(255, 182, 193, .9)', line = list(color = 'rgba(152, 0, 0, .8)', width = 2)),
+        text = ~paste("Country:", Country)) %>%
+  layout(title = "Interactive Scatter Plot of GDP vs Child Deprivation")
+```
+
+
+## Conclusion:
+
+Through these visualizations, our narrative bridges the gap between macroeconomic indicators and their human implications, offering a comprehensive view that connects economic health with child welfare outcomes. By understanding these relationships, policymakers, researchers, and the global community can better target interventions and policies to reduce child deprivation effectively.
+
+This cohesive storyline, supported by diverse visual representations, not only informs but also empowers stakeholders to take informed action based on a clear understanding of where and how economic factors intersect with the lives of children around the world.
+

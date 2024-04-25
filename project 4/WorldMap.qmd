@@ -1,0 +1,51 @@
+---
+title: "WorldMap"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+
+install.packages("ggplot2")
+install.packages("dplyr")
+install.packages("rnaturalearth")
+install.packages("rnaturalearthdata")
+install.packages("sf")
+
+
+```
+
+```{r}
+source("main.r")
+```
+
+```{r}
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Merge world map data with our data
+world_map <- left_join(world, combined_data, by = c("iso_a2" = "alpha_2_code"))
+
+# Plot
+ggplot(data = world_map) +
+  geom_sf(aes(fill = Child_Deprivation)) +
+  labs(title = "Global Child Deprivation Rates", fill = "Deprivation %") +
+  theme_minimal()
+
+```
+
+```{alnutrition Rates by Country", x = "", y = "") +}
+  theme_minimal()
+
+```
